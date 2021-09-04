@@ -12,8 +12,7 @@ COPY fujitsu.conf scan.script entry.sh daemons scanbd_dbus.conf scanbd.conf \
     dropbox_uploader \
     /tmp/
 
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    apt update && apt install -y \
+RUN apt update && apt install -y \
     ucspi-tcp \
     daemontools \
     scanbd \
