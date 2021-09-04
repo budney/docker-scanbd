@@ -1,0 +1,26 @@
+#!/bin/bash
+# Thanks to Andreas Gohr (http://www.splitbrain.org/) for the initial work
+# https://github.com/splitbrain/paper-backup/
+export LANGUAGE="eng"
+export HOME=/service/scan-button
+export TMPDIR=$HOME/work
+FILE_NAME=scan_$(date +%Y%m%d-%H%M%S)
+OUT_DIR=/service/scan-processor/work/
+
+WORK=$(/bin/mktemp -d)
+cd $WORK
+
+echo 'Scanning...'
+scanimage \
+    -d "$SCANBD_DEVICE" \
+    --batch="$WORK/$FILE_NAME-%03d.pnm" \
+    --resolution 300 \
+    --source 'ADF Duplex' \
+    --format pnm \
+    --mode Color \
+    && echo 'Scan complete.'
+
+cd $TMPDIR
+mv $WORK $OUT_DIR \
+    && echo "Scan saved in $OUT_DIR$(basename $WORK)/$FILE_NAME-*.pnm"
+

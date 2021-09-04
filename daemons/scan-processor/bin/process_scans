@@ -1,0 +1,79 @@
+#!/bin/bash
+# Thanks to Andreas Gohr (http://www.splitbrain.org/) for the initial work
+# https://github.com/splitbrain/paper-backup/
+
+do_trim()
+{
+    # cut borders
+    echo 'Trimming borders...'
+    for i in scan_*.pnm
+    do
+        convert -fuzz 25% -trim +repage "${i}" "${i%*.pnm}.tif"
+    done
+}
+
+do_ocr()
+{
+    # Starting OCR
+    echo 'Running OCR...'
+    for i in *.tif
+    do
+        echo "${i}"
+        tesseract "$i" "$i" -l $LANGUAGE hocr
+        hocr2pdf -i "$i" -s -o "${i%*.tif}.pdf" < "$i.hocr"
+    done
+}
+
+do_pdf()
+{
+    FILE_NAME="$1"
+
+    # create PDF
+    echo 'Generating PDF...'
+    pdftk *.pdf output "$FILE_NAME.pdf"
+}
+
+do_dropbox()
+{
+    FILE_NAME="$1"
+
+    # Save a local copy
+    cp "$FILE_NAME.pdf" "$ARCHIVE/"
+
+    # Upload to dropbox
+    if [ -f /etc/dropbox_uploader.conf ]; then
+        /usr/local/bin/dropbox_uploader -s \
+            -f /etc/dropbox_uploader.conf \
+            upload \
+            "$FILE_NAME.pdf" "Documents/S/Scans/"
+    else
+        echo "No dropbox config: skipping upload."
+    fi
+}
+
+# Abort on errors
+trap exit ERR
+
+# Change to the work directory
+cd "$WORK_DIR"
+
+# Delete empty directories first
+find . -mindepth 1 -maxdepth 1 -type d -cmin +60 -empty | xargs rm -f
+
+# Now process what's left
+for TMP_DIR in $(find . -mindepth 1 -maxdepth 1 -type d)
+do
+    echo Processing "$TMP_DIR"
+    cd "$TMP_DIR"
+
+    FILE_NAME=$(ls *.pnm|head -1)
+    FILE_NAME=${FILE_NAME%*-[0-9][0-9][0-9].pnm}
+
+    do_trim
+    do_ocr
+    do_pdf "$FILE_NAME"
+    do_dropbox "$FILE_NAME"
+
+    cd "$WORK_DIR" && rm -rf "$TMP_DIR"
+    echo Finished "$TMP_DIR"
+done

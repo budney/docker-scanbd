@@ -1,0 +1,8 @@
+#!/bin/sh
+
+exec 2>&1
+
+# Monitor the scanner 
+envdir ./env sh -c '
+    exec envuidgid scanbd /usr/sbin/scanbd -f -c /etc/scanbd/scanbd.conf
+'

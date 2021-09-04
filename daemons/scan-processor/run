@@ -1,0 +1,9 @@
+#!/bin/sh
+exec 2>&1
+
+while :; do
+    envdir ./env sh -c '
+        exec envuidgid scanbd ./bin/process_scans
+    '
+    sleep 10
+done

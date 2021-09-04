@@ -1,0 +1,34 @@
+# This dockerfile sets up a DNS server that nobody can reach,
+# and a DNS cache that both talks to it and answers general
+# DNS queries. This is useful behind a firewall, where you
+# need to lookup internal hosts but have no need to issue
+# authoritative responses to other people's queries.
+
+version: "3"
+services:
+  scan_button:
+    image: budney/scanbd
+    restart: "no"
+    privileged: true
+    environment:
+      SERVICE: scan-button
+      USER_UID: 65526
+      USER_GID: 65526
+      UDEV: "on"
+    volumes:
+      - /home/budney/tmp/scanner:/var/spool/scan
+      - /home/budney/tmp/archive:/var/spool/archive
+      - /var/run/dbus/system_bus_socket:/run/dbus/system_bus_socket
+  scan_processor:
+    image: budney/scanbd
+    restart: "no"
+    environment:
+      SERVICE: scan-processor
+      USER_UID: 65526
+      USER_GID: 65526
+    volumes:
+      - /home/budney/tmp/scanner:/var/spool/scan
+      - /home/budney/tmp/archive:/var/spool/archive
+      - /etc/dropbox_uploader.conf:/etc/dropbox_uploader.conf
+    links:
+      - scan_button
