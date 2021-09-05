@@ -7,7 +7,9 @@ export TMPDIR=$HOME/work
 FILE_NAME=scan_$(date +%Y%m%d-%H%M%S)
 OUT_DIR=/service/scan-processor/work/
 
-WORK=$(/bin/mktemp -d)
+# Extra insurance against folder collisions
+TEMPLATE="tmp.$(tr -dc '0-9A-Za-z' < /dev/urandom | head -c 12).XXXXXX"
+WORK=$(/bin/mktemp -d -t "${TEMPLATE}")
 cd $WORK
 
 echo 'Scanning...'
