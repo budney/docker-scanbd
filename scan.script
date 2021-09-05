@@ -23,6 +23,10 @@ scanimage \
     && echo 'Scan complete.'
 
 cd $TMPDIR
-mv $WORK $OUT_DIR \
-    && echo "Scan saved in $OUT_DIR$(basename $WORK)/$FILE_NAME-*.pnm"
+
+# Submit the scan for processing, unless there are no image files
+if ls "$WORK" | egrep -q pnm; then
+    mv $WORK $OUT_DIR \
+        && echo "Scan saved in $OUT_DIR$(basename $WORK)/$FILE_NAME-*.pnm"
+fi
 
