@@ -61,7 +61,7 @@ cd "$WORK_DIR"
 find . -mindepth 1 -maxdepth 1 -type d -cmin +60 -empty | xargs rm -f
 
 # Now process what's left
-for TMP_DIR in $(find . -mindepth 1 -maxdepth 1 -type d)
+for TMP_DIR in $(find . -mindepth 1 -maxdepth 1 -type d -not -empty)
 do
     echo Processing "$TMP_DIR"
     cd "$TMP_DIR"
